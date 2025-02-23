@@ -21,9 +21,7 @@ jobs:
           pip install kivy buildozer
 
       - name: Build APK
-        run: |
-          buildozer init
-          buildozer -v android debug
+        run: | buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v3
