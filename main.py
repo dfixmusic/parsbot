@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 # Получаем параметры из переменных окружения Replit (Secrets)
 API_ID = int(os.getenv("API_ID", "29829466"))
 API_HASH = os.getenv("API_HASH", "c95497b8e5c18c8c65ea53ee29320ba9")
-TARGET_CHANNEL = os.getenv("TARGET_CHANNEL", "3719502636")  # ID канала или username с @
+
+# Целевой получатель — Избранное (Saved Messages)
+TARGET = "me"   # можно также использовать await client.get_me()
 
 # Ключевые слова для поиска
 KEYWORDS = [
@@ -34,14 +36,13 @@ if string_session:
     client = TelegramClient(sessions.StringSession(string_session), API_ID, API_HASH)
     logger.info("Используется строковая сессия")
 else:
-    # Для локального тестирования можно использовать файл сессии
     client = TelegramClient("session_replit", API_ID, API_HASH)
     logger.info("Используется файловая сессия")
 
 # Обработчик новых сообщений
 @client.on(events.NewMessage())
 async def handler(event):
-    await asyncio.sleep(0.1)  # небольшая задержка
+    await asyncio.sleep(0.1)
     message = event.message
     if not message or not message.text:
         return
@@ -64,11 +65,12 @@ async def handler(event):
                     link = f"https://t.me/c/{chat_id}/{message.id}"
 
                 logger.info(f"Найдено ключевое слово в сообщении: {link}")
+                # Отправляем в Избранное
                 await client.send_message(
-                    TARGET_CHANNEL,
+                    TARGET,
                     f"{message.text}\n\nСсылка на сообщение: {link}"
                 )
-                logger.info(f"Сообщение отправлено в канал: {message.text[:100]}")
+                logger.info(f"Сообщение отправлено в Избранное: {message.text[:100]}")
             except Exception as e:
                 logger.error(f"Ошибка при обработке сообщения: {e}")
             break
@@ -98,8 +100,6 @@ async def main():
             break
 
 if __name__ == "__main__":
-    # Запускаем веб-сервер для keep-alive
     from keep_alive import keep_alive
     keep_alive()
-    # Запускаем бота
     asyncio.run(main())
